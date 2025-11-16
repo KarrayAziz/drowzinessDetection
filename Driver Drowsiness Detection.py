@@ -7,7 +7,7 @@ import imutils
 import time
 import dlib
 import math
-from cv2 import cv2
+import cv2
 import numpy as np
 from EAR import eye_aspect_ratio
 from MAR import mouth_aspect_ratio
@@ -24,7 +24,7 @@ predictor = dlib.shape_predictor(
 # camera sensor to warm up
 print("[INFO] initializing camera...")
 
-vs = VideoStream(src=1).start()
+vs = VideoStream(src=0).start()
 # vs = VideoStream(usePiCamera=True).start() # Raspberry Pi
 time.sleep(2.0)
 
@@ -59,6 +59,9 @@ while True:
     # have a maximum width of 400 pixels, and convert it to
     # grayscale
     frame = vs.read()
+    if frame is None:
+        print("[ERROR] Failed to grab frame from camera")
+        break
     frame = imutils.resize(frame, width=1024, height=576)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     size = gray.shape
@@ -213,7 +216,7 @@ while True:
 
         # extract the mouth coordinates, then use the
         # coordinates to compute the mouth aspect ratio
-    # show the frameq
+    # show the frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
 
