@@ -74,7 +74,7 @@ while True:
     if len(rects) > 0:
         text = "{} face(s) found".format(len(rects))
         cv2.putText(frame, text, (10, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
     # loop over the face detections
     for rect in rects:
@@ -113,10 +113,17 @@ while True:
             if COUNTER >= EYE_AR_CONSEC_FRAMES:
                 cv2.putText(frame, "Eyes Closed!", (500, 20),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            else:
+                # Eyes are open or just blinking
+                cv2.putText(frame, "Eyes Open", (500, 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             # otherwise, the eye aspect ratio is not below the blink
             # threshold, so reset the counter and alarm
         else:
             COUNTER = 0
+            # Eyes are open
+            cv2.putText(frame, "Eyes Open", (500, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
         mouth = shape[mStart:mEnd]
 
@@ -127,8 +134,10 @@ while True:
         mouthHull = cv2.convexHull(mouth)
 
         cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
+        # Set color based on MAR threshold: green if below threshold, red if above
+        mar_color = (0, 255, 0) if mar < MOUTH_AR_THRESH else (0, 0, 255)
         cv2.putText(frame, "MAR: {:.2f}".format(mar), (650, 20), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, mar_color, 2)
 
         # Draw text if mouth is open
         if mar > MOUTH_AR_THRESH:
@@ -211,8 +220,11 @@ while True:
         cv2.line(frame, start_point, end_point_alt, (0, 0, 255), 2)
 
         if head_tilt_degree:
-            cv2.putText(frame, 'Head Tilt Degree: ' + str(head_tilt_degree[0]), (170, 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            # Set color based on head tilt: green if below 10 degrees, red if above
+            tilt_value = abs(head_tilt_degree[0])
+            tilt_color = (0, 255, 0) if tilt_value < 10 else (0, 0, 255)
+            cv2.putText(frame, 'Head Tilt Degree: {:.2f}'.format(head_tilt_degree[0]), (170, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, tilt_color, 2)
 
         # extract the mouth coordinates, then use the
         # coordinates to compute the mouth aspect ratio
